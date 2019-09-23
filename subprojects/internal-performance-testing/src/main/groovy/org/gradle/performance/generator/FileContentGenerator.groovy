@@ -108,20 +108,11 @@ abstract class FileContentGenerator {
                 """
             }
 
-            return includedProjects + """
-                def enableFeaturePreviewSafe(String feature) {
-                     try {
-                        enableFeaturePreview(feature)
-                        println "Enabled feature preview " + feature
-                     } catch(Exception ignored) {
-                        println "Failed to enable feature preview " + feature
-                     }
-                }
-
-                ${config.featurePreviews.collect { "enableFeaturePreviewSafe(\"$it\")" }.join("\n")}
-            """
+            return includedProjects + generateEnableFeaturePreviewCode()
         }
     }
+
+    abstract protected String generateEnableFeaturePreviewCode()
 
     def generateGradleProperties(boolean isRoot) {
         if (!isRoot && !config.compositeBuild) {
