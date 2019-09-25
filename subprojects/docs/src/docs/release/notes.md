@@ -260,6 +260,13 @@ Gradle now reports the progress of the distribution downloaded.
 
 Initially contributed by [Artur Dryomov](https://github.com/ming13).
 
+## Features for Gradle tooling providers
+
+### Test output as progress event
+
+Users of the latest Tooling API can listen to the new [`TestOutputEvent`](javadoc/org/gradle/tooling/events/test/TestLauncher.html) progress event type that contains the test output.
+With that, tooling providers can use the [`TestLauncher`](javadoc/org/gradle/tooling/TestLauncher.html) API to launch tests and show the test output on the fly.
+
 ## Promoted features
 Promoted features are features that were incubating in previous versions of Gradle but are now supported and subject to backwards compatibility.
 See the User Manual section on the “[Feature Lifecycle](userguide/feature_lifecycle.html)” for more information.
