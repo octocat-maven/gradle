@@ -124,7 +124,7 @@ public class DefaultVisualStudioLocator implements VisualStudioLocator {
         }
 
         if (isValidInstall(install) && install.getVisualCppVersion() != VersionNumber.UNKNOWN) {
-            LOGGER.debug("Found Visual C++ {} at {}", install.getVisualCppVersion(), visualCppDir);
+            LOGGER.warn("Found Visual C++ {} at {}", install.getVisualCppVersion(), visualCppDir);
             VersionNumber visualStudioVersion = install.getVersion();
             String visualStudioDisplayVersion = install.getVersion() == VersionNumber.UNKNOWN ? "from " + source : install.getVersion().toString();
             VisualCppInstall visualCpp = buildVisualCppInstall("Visual C++ " + install.getVisualCppVersion(), visualStudioDir, visualCppDir, install.getVisualCppVersion(), install.getCompatibility());
