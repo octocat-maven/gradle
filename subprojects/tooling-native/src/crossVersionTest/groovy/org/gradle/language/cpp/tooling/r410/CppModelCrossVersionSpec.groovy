@@ -32,14 +32,30 @@ import org.gradle.tooling.model.cpp.CppTestSuite
 @TargetGradleVersion(">=4.10")
 class CppModelCrossVersionSpec extends ToolingApiSpecification {
     def toolchain = AvailableToolChains.defaultToolChain
+    File initScript
+
+    def setup() {
+        initScript = file("init.gradle") << """
+            allprojects { p ->
+                apply plugin: ${toolchain.pluginClass}
+
+                model {
+                      toolChains {
+                        ${toolchain.buildScriptConfig}
+                      }
+                }
+            }
+        """
+    }
 
     def "has empty model when root project does not apply any C++ plugins"() {
+        toolchain.buildScriptConfig
         buildFile << """
             apply plugin: 'java-library'
         """
 
         when:
-        def project = withConnection { connection -> connection.getModel(CppProject.class) }
+        def project = fetchModel()
 
         then:
         project.projectIdentifier.projectPath == ':'
@@ -60,7 +76,7 @@ class CppModelCrossVersionSpec extends ToolingApiSpecification {
         def src2 = file('src/main/cpp/app-impl.cpp').createFile()
 
         when:
-        def project = withConnection { connection -> connection.getModel(CppProject.class) }
+        def project = fetchModel()
 
         then:
         project.projectIdentifier.projectPath == ':'
@@ -138,7 +154,7 @@ class CppModelCrossVersionSpec extends ToolingApiSpecification {
         def src2 = file('src/main/cpp/lib-impl.cpp').createFile()
 
         when:
-        def project = withConnection { connection -> connection.getModel(CppProject.class) }
+        def project = fetchModel()
 
         then:
         project.mainComponent instanceof CppLibrary
@@ -206,7 +222,7 @@ class CppModelCrossVersionSpec extends ToolingApiSpecification {
         def src2 = file('src/test/cpp/test2.cpp').createFile()
 
         when:
-        def project = withConnection { connection -> connection.getModel(CppProject.class) }
+        def project = fetchModel()
 
         then:
         project.mainComponent == null
@@ -244,7 +260,7 @@ class CppModelCrossVersionSpec extends ToolingApiSpecification {
         """
 
         when:
-        def project = withConnection { connection -> connection.getModel(CppProject.class) }
+        def project = fetchModel()
 
         then:
         project.mainComponent instanceof CppApplication
@@ -263,7 +279,7 @@ class CppModelCrossVersionSpec extends ToolingApiSpecification {
         """
 
         when:
-        def project = withConnection { connection -> connection.getModel(CppProject.class) }
+        def project = fetchModel()
 
         then:
         project.mainComponent instanceof CppLibrary
@@ -296,7 +312,7 @@ class CppModelCrossVersionSpec extends ToolingApiSpecification {
         def src2 = file('other/app-impl.cpp').createFile()
 
         when:
-        def project = withConnection { connection -> connection.getModel(CppProject.class) }
+        def project = fetchModel()
 
         then:
         project.mainComponent instanceof CppApplication
@@ -359,7 +375,7 @@ class CppModelCrossVersionSpec extends ToolingApiSpecification {
         def otherHeaders = file('other')
 
         when:
-        def project = withConnection { connection -> connection.getModel(CppProject.class) }
+        def project = fetchModel()
 
         then:
         project.mainComponent instanceof CppLibrary
@@ -438,7 +454,7 @@ class CppModelCrossVersionSpec extends ToolingApiSpecification {
         """
 
         when:
-        def models = withConnection { connection -> connection.action(new FetchAllCppProjects()).run() }
+        def models = fetchAllModels()
 
         then:
         models.size() == 4
@@ -488,7 +504,7 @@ class CppModelCrossVersionSpec extends ToolingApiSpecification {
         """
 
         when:
-        def models = withConnection { connection -> connection.action(new FetchAllCppProjects()).run() }
+        def models = fetchAllModels()
 
         then:
         models.size() == 3
@@ -520,5 +536,16 @@ class CppModelCrossVersionSpec extends ToolingApiSpecification {
         libProject.mainComponent.binaries[0].linkageDetails.linkTask.projectIdentifier.buildIdentifier.rootDir == file('lib')
         libProject.mainComponent.binaries[0].linkageDetails.linkTask.projectIdentifier.projectPath == ':'
         libProject.testComponent != null
+    }
+
+    private CppProject fetchModel() {
+        return withConnection { connection ->
+            connection.model(CppProject).addArguments("-I", initScript.absolutePath).get()
+        }
+    }
+    private List<CppProject> fetchAllModels() {
+        return withConnection { connection ->
+            connection.action(new FetchAllCppProjects()).addArguments("-I", initScript.absolutePath).run()
+        }
     }
 }
