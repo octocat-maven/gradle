@@ -16,6 +16,8 @@ import org.gradle.api.internal.FeaturePreviews
  * limitations under the License.
  */
 
+includeBuild("/Users/daniel/gradle/guides/guides/subprojects/gradle-guides-plugin")
+
 apply(from = "gradle/shared-with-buildSrc/build-cache-configuration.settings.gradle.kts")
 apply(from = "gradle/shared-with-buildSrc/mirrors.settings.gradle.kts")
 
@@ -158,6 +160,13 @@ pluginManagement {
         gradlePluginPortal()
         maven { url = uri("https://repo.gradle.org/gradle/libs-releases") }
     }
+    resolutionStrategy {
+        eachPlugin {
+            if (requested.id.id.equals("org.gradle.samples")) {
+                useModule("org.gradle.guides:gradle-guides-plugin")
+            }
+        }
+    }
 }
 
 val ignoredFeatures = setOf<FeaturePreviews.Feature>()
@@ -167,4 +176,3 @@ FeaturePreviews.Feature.values().forEach { feature ->
         enableFeaturePreview(feature.name)
     }
 }
-

@@ -34,6 +34,7 @@ plugins {
     id 'gradlebuild.jsoup'
     id 'javascript-base'
     id 'org.asciidoctor.convert'
+    id 'org.gradle.samples'
 }
 
 repositories {
@@ -192,6 +193,8 @@ def imageFiles = fileTree(userguideSrcDir) {
     include 'img/*.jpg'
 }
 def resourceFiles = imageFiles + cssFiles
+
+
 
 def samples = tasks.register("samples", Sync) {
     from samplesSrcDir
@@ -570,4 +573,10 @@ def checkDeadInternalLinks = tasks.register("checkDeadInternalLinks", org.gradle
 
 tasks.named("check") {
     dependsOn(checkDeadInternalLinks)
+}
+
+samples {
+    javaGradlePlugin {
+        sampleDir = file("src/samples/javaGradlePlugin")
+    }
 }
